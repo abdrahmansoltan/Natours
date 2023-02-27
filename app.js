@@ -1,9 +1,11 @@
 const express = require('express');
 const fs = require('fs');
+const morgan = require('morgan');
 
 const app = express();
 
 // Middlewares
+app.use(morgan('dev'));
 app.use(express.json()); // to have access to "body" of req
 
 const tours = JSON.parse(
