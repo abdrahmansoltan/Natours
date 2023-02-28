@@ -6,7 +6,9 @@ const userRouter = require('./routes/userRoutes');
 const app = express();
 
 // Middlewares
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev')); // enable logging middleware only in dev mode
+}
 app.use(express.json()); // to have access to "body" of req
 
 // Routes
