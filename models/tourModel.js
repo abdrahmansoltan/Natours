@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -86,6 +87,22 @@ const tourSchema = new mongoose.Schema(
 // virtual properties
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+
+// Document Middleware: runs before .save() commands
+tourSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+// Query Middleware for all query commands that start with "find"
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } }); // exclude secretTour field from query result
+  next();
+});
+// Aggregation Middleware
+tourSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }); // exclude secretTour field from aggregation pipeline result
+  next();
 });
 
 const Tour = mongoose.model('Tour', tourSchema);
