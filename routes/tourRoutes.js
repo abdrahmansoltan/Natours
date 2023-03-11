@@ -1,5 +1,6 @@
 const express = require('express');
 const tourController = require('../controllers/tourController');
+const authController = require('../controllers/authController');
 
 // Routes
 const router = express.Router();
@@ -16,7 +17,7 @@ router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 // chaining HTTP methods for the same route
 router
   .route('/')
-  .get(tourController.getAllTours)
+  .get(authController.protect, tourController.getAllTours)
   .post(tourController.createTour);
 router
   .route('/:id')
