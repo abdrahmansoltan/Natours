@@ -1,9 +1,13 @@
 const express = require('express');
 const userController = require('../controllers/userController');
+const authController = require('../controllers/authController');
 
 // Routes
 const router = express.Router();
 
+router.post('/signup', authController.signup);
+
+// System Administrator routes
 router
   .route('/')
   .get(userController.getAllUsers)
