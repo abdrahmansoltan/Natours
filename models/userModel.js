@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: 8,
-    select: false,
+    select: false, // to prevent sending the password in the response
   },
   passwordConfirm: {
     type: String,
@@ -46,6 +46,28 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 });
+
+// -------------------------Middlewares (HOOKS)------------------------- //
+// this encryption happens between receiving the data and persisting it to the database
+userSchema.pre('save', async function (next) {
+  // Only run this function if password was actually modified
+  if (!this.isModified('password')) return next();
+
+  // Hash the password with cost of 12
+  this.password = await bcrypt.hash(this.password, 12);
+
+  // Delete passwordConfirm field and prevent persisting it to the DB
+  this.passwordConfirm = undefined;
+  next();
+});
+
+// Instance Methods
+userSchema.methods.isCorrectPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 const User = mongoose.model('User', userSchema);
 
