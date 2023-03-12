@@ -105,3 +105,17 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
+
+// RouteControllers for password operations
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on POST-ed email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('There is no user with email address.', 404));
+  }
+
+  // 2) Generate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false }); // save (without validation) the user-document after modifying some fields (passwordResetToken, passwordResetExpires)
+
+});
