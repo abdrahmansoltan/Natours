@@ -19,6 +19,11 @@ router.patch(
   authController.protect,
   userController.updateMe
 );
+router.delete(
+  '/deleteMe',
+  authController.protect,
+  userController.deleteMe
+);
 
 // System Administrator routes
 router
