@@ -71,6 +71,13 @@ userSchema.pre('save', function (next) {
   next();
 });
 
+// Query middleware
+userSchema.pre(/^find/, function (next) {
+  // "this" points to the current query
+  this.find({ active: { $ne: false } }); // only find documents that its "active" field is "true"
+  next();
+});
+
 // Instance Methods
 userSchema.methods.isCorrectPassword = async function (
   candidatePassword,
