@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -38,7 +39,21 @@ app.use(mongoSanitize());
 // Data sanitization against XSS
 app.use(xss());
 
-// Routes
+// Prevent parameter pollution
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'maxGroupSize',
+      'difficulty',
+      'price'
+    ]
+  })
+);
+
+// ------------------------------------Routes------------------------------------ //
 // "v1" for API version, which is useful if there's a new version in the future
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
