@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const AppError = require('./utils/appError');
@@ -8,7 +9,11 @@ const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
 
-// Middlewares
+// ------------------------------Middlewares------------------------------ //
+// Set security HTTP headers
+app.use(helmet());
+
+// Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); // enable logging middleware only in dev mode
 }
@@ -21,7 +26,8 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter); // Only limit access to the "/api" route
 
-app.use(express.json()); // to have access to "body" of req
+// Body parser, reading data from body into req.body
+app.use(express.json({ limit: '10kb' })); // to have access to "body" of req
 
 // Routes
 // "v1" for API version, which is useful if there's a new version in the future
