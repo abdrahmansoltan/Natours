@@ -2,6 +2,9 @@ const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const AppError = require('./utils/appError');
@@ -28,6 +31,12 @@ app.use('/api', limiter); // Only limit access to the "/api" route
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' })); // to have access to "body" of req
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
 
 // Routes
 // "v1" for API version, which is useful if there's a new version in the future
