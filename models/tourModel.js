@@ -77,6 +77,37 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      // GeoJSON
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: [
+      // Child-referencing user-document with tour-document
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User', // reference to User model
+      },
+    ],
   },
   {
     toJSON: { virtuals: true }, // add the virtual properties when we convert to JSON
@@ -94,9 +125,18 @@ tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
-// Query Middleware for all query commands that start with "find"
+// Query Middlewares for all query commands that start with "find"
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } }); // exclude secretTour field from query result
+  next();
+});
+tourSchema.pre(/^find/, function (next) {
+  // populating Tour "Guides" field
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
+
   next();
 });
 // Aggregation Middleware
