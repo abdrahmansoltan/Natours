@@ -1,9 +1,13 @@
 const express = require('express');
 const tourController = require('../controllers/tourController');
 const authController = require('../controllers/authController');
+const reviewRouter = require('../routes/reviewRoutes');
 
 // Routes
 const router = express.Router();
+
+// Nested routes
+router.use('/:tourId/reviews', reviewRouter);
 
 // Aliasing
 router
