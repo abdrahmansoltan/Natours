@@ -119,6 +119,7 @@ const tourSchema = new mongoose.Schema(
 // Compound indexes for regularly-queried fields (price, ratingsAverage, slug) for performance
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' }); // startLocation should be indexed to a 2D sphere (earth-like sphere)
 
 // virtual properties
 tourSchema.virtual('durationWeeks').get(function () {
@@ -148,11 +149,6 @@ tourSchema.pre(/^find/, function (next) {
     select: '-__v -passwordChangedAt',
   });
 
-  next();
-});
-// Aggregation Middleware
-tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }); // exclude secretTour field from aggregation pipeline result
   next();
 });
 
