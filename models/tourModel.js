@@ -115,6 +115,10 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+// Compound indexes for regularly-queried fields (price, ratingsAverage, slug) for performance
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 // virtual properties
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
