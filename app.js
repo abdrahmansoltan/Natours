@@ -14,6 +14,8 @@ const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
 
+// Template engine
+app.set('view engine', 'pug');
 // ------------------------------Middlewares------------------------------ //
 // Set security HTTP headers
 app.use(helmet());
