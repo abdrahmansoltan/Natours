@@ -1,5 +1,6 @@
 // review / rating / createdAt / ref to tour / ref to user
 const mongoose = require('mongoose');
+const Tour = require('./tourModel');
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -42,6 +43,49 @@ reviewSchema.pre(/^find/, function (next) {
     select: 'name photo', // only take ("name" and "photo") fields from User-document
   });
   next();
+});
+
+// helper static class-method for calculating average-rating and the number of ratings for a specified tour and update the corresponding tour-document with the calculated stats
+reviewSchema.statics.calcAverageRatings = async function (tourId) {
+  const stats = await this.aggregate([
+    {
+      $match: { tour: tourId },
+    },
+    {
+      $group: {
+        _id: '$tour', // group them by tour
+        nRating: { $sum: 1 }, // sum by adding (1) for each tour
+        avgRating: { $avg: '$rating' },
+      },
+    },
+  ]);
+
+  if (stats.length > 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: stats[0].nRating,
+      ratingsAverage: stats[0].avgRating,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: 0,
+      ratingsAverage: 4.5,
+    });
+  }
+};
+
+reviewSchema.post('save', function () {
+  // "this" points to current review
+  this.constructor.calcAverageRatings(this.tour);
+});
+
+// re-calculating the average-ratings when updating/deleting a review
+reviewSchema.pre(/^findOneAnd/, async function (next) {
+  this.r = await this.findOne().clone(); // storing data from the pre-middleware
+  next(); // passing data from pre-middleware to post-middleware
+});
+reviewSchema.post(/^findOneAnd/, async function () {
+  // await this.findOne(); does NOT work here, query has already executed
+  await this.r.constructor.calcAverageRatings(this.r.tour);
 });
 
 const Review = mongoose.model('Review', reviewSchema);
