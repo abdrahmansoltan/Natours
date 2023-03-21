@@ -10,6 +10,7 @@ const hpp = require('hpp');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewRoutes');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 
@@ -17,6 +18,8 @@ const app = express();
 
 // Template engine
 app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
 // ------------------------------Middlewares------------------------------ //
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -55,12 +58,14 @@ app.use(
       'ratingsAverage',
       'maxGroupSize',
       'difficulty',
-      'price'
-    ]
+      'price',
+    ],
   })
 );
 
 // ------------------------------------Routes------------------------------------ //
+app.use('/', viewRouter);
+
 // "v1" for API version, which is useful if there's a new version in the future
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
