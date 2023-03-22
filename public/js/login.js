@@ -1,3 +1,18 @@
+// Helpers
+const hideAlert = () => {
+  const el = document.querySelector('.alert');
+  if (el) el.parentElement.removeChild(el);
+};
+
+showAlert = (type, msg) => {
+  hideAlert();
+  const markup = `<div class="alert alert--${type}">${msg}</div>`;
+  document.querySelector('body').insertAdjacentHTML('afterbegin', markup);
+  window.setTimeout(hideAlert, 3000);
+};
+
+// -------------------------------------------------------------------------------------------- //
+
 const login = async (email, password) => {
   try {
     const res = await axios({
@@ -10,9 +25,14 @@ const login = async (email, password) => {
       },
     });
 
-    console.log(res);
+    if (res.data.status === 'success') {
+      showAlert('success', 'Logged in successfully!');
+      window.setTimeout(() => {
+        location.assign('/');
+      }, 1500);
+    }
   } catch (err) {
-    console.log('error', err.response.data.message);
+    showAlert('error', err.response.data.message);
   }
 };
 
