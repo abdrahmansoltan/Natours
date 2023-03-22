@@ -1,3 +1,5 @@
+const locations = JSON.parse(document.getElementById('map').dataset.locations);
+
 mapboxgl.accessToken =
   'pk.eyJ1IjoiYWJkZWxyYWhtYW5zb2x0YW4iLCJhIjoiY2xmamhubDF6MDEwZDNybXRxYjdmYXh4NyJ9.JOsaOkjoDzZzF97AXM21Og';
 
@@ -8,4 +10,41 @@ var map = new mapboxgl.Map({
   // center: [-118.113491, 34.111745],
   // zoom: 10,
   // interactive: false
+});
+
+const bounds = new mapboxgl.LngLatBounds();
+
+locations.forEach((loc) => {
+  // Create marker
+  const el = document.createElement('div');
+  el.className = 'marker';
+
+  // Add marker
+  new mapboxgl.Marker({
+    element: el,
+    anchor: 'bottom',
+  })
+    .setLngLat(loc.coordinates)
+    .addTo(map);
+
+  // Add popup
+  new mapboxgl.Popup({
+    offset: 30,
+  })
+    .setLngLat(loc.coordinates)
+    .setHTML(`<p>Day ${loc.day}: ${loc.description}</p>`)
+    .addTo(map);
+
+  // Extend map bounds to include current location
+  bounds.extend(loc.coordinates);
+});
+
+// zoom map to the bounds to fit the markers
+map.fitBounds(bounds, {
+  padding: {
+    top: 200,
+    bottom: 150,
+    left: 100,
+    right: 100,
+  },
 });
