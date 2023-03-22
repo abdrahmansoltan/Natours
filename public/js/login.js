@@ -1,8 +1,4 @@
-// Helpers
-const hideAlert = () => {
-  const el = document.querySelector('.alert');
-  if (el) el.parentElement.removeChild(el);
-};
+import axios from 'axios';
 
 showAlert = (type, msg) => {
   hideAlert();
