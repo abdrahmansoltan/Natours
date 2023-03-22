@@ -21,6 +21,8 @@ const createSendToken = (user, statusCode, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 1000 * 60 * 60 * 24
     ), // date in days converted to milliseconds
     // secure: true, // cookie will only be send on an encrypted connection (HTTPS)
+    sameSite: 'none',
+    secure: 'false',
     httpOnly: true, // cookie can't be accessed or modified by the browser (To prevent XSS attacks)
   };
 
@@ -80,6 +82,9 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookie.jwt) {
+    // authenticate users based on tokens send by cookies
+    token = req.cookies.jwt;
   }
 
   if (!token) {

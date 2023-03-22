@@ -6,7 +6,8 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const cors = require('cors')
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -41,7 +42,7 @@ app.use(
   })
 );
 
-app.use(cors())
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {
@@ -58,6 +59,7 @@ app.use('/api', limiter); // Only limit access to the "/api" route
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' })); // to have access to "body" of req
+app.use(cookieParser()); // parse data from cookies
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
