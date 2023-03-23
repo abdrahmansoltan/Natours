@@ -2,6 +2,36 @@ const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
+const multer = require('multer');
+
+// Image Upload Configuration
+const multerStorage = multer.diskStorage({
+  // cb: callback function
+  destination: (req, file, cb) => {
+    cb(null, 'public/img/users'); // save images to "public/img/users"
+  },
+  filename: (req, file, cb) => {
+    const ext = file.mimetype.split('/')[1]; // mimetype is a string like "image/jpeg" or "image/gif" or "image/png", which is why the split() method is used.
+
+    cb(null, `user-${req.user.id}-${Date.now()}.${ext}`); // Ex: user-767676abc76dba-332323766764.jpeg
+  },
+});
+
+// function that will be called by multer to determine if the file should be saved or not based on file-type.
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+// -------------------------------------------------------------------------------- //
 
 // Helpers
 const filterObj = (obj, ...allowedFields) => {
