@@ -97,6 +97,7 @@ module.exports = (err, req, res, next) => {
     sendErrorDev(err, req, res);
   } else if (process.env.NODE_ENV === 'production') {
     let error = { ...err };
+    error.message = err.message; // to keep error-message in production
 
     // MongoDB Operational Errors
     if (error.name === 'CastError') error = handleCastErrorDB(error);
