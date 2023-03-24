@@ -3,19 +3,23 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 const multer = require('multer');
+const sharp = require('sharp');
 
 // Image Upload Configuration
-const multerStorage = multer.diskStorage({
-  // cb: callback function
-  destination: (req, file, cb) => {
-    cb(null, 'public/img/users'); // save images to "public/img/users"
-  },
-  filename: (req, file, cb) => {
-    const ext = file.mimetype.split('/')[1]; // mimetype is a string like "image/jpeg" or "image/gif" or "image/png", which is why the split() method is used.
+// const multerStorage = multer.diskStorage({
+//   // cb: callback function
+//   destination: (req, file, cb) => {
+//     cb(null, 'public/img/users'); // save images to "public/img/users"
+//   },
+//   filename: (req, file, cb) => {
+//     const ext = file.mimetype.split('/')[1]; // mimetype is a string like "image/jpeg" or "image/gif" or "image/png", which is why the split() method is used.
 
-    cb(null, `user-${req.user.id}-${Date.now()}.${ext}`); // Ex: user-767676abc76dba-332323766764.jpeg
-  },
-});
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`); // Ex: user-767676abc76dba-332323766764.jpeg
+//   },
+// });
+
+// store image as a buffer in memory instead of saving it to disk
+const multerStorage = multer.memoryStorage();
 
 // function that will be called by multer to determine if the file should be saved or not based on file-type.
 const multerFilter = (req, file, cb) => {
@@ -29,6 +33,22 @@ const multerFilter = (req, file, cb) => {
 const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
+});
+
+exports.uploadUserPhoto = upload.single('photo'); // "photo" is the name of the field in the form-data
+
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`; // Ex: user-767676abc76dba-332323766764.jpeg
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
 });
 
 // -------------------------------------------------------------------------------- //
@@ -61,6 +81,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // 2) Discard unwanted fields names from the request-body that are not allowed to be updated (like "role")
   const filteredBody = filterObj(req.body, 'name', 'email');
+  if (req.file) filteredBody.photo = req.file.filename;
 
   // 3) Update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
