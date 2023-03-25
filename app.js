@@ -8,6 +8,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -91,6 +92,9 @@ app.use((req, res, next) => {
   );
   next();
 });
+
+// Compress text sent to client to reduce size
+app.use(compression());
 
 // ------------------------------------Routes------------------------------------ //
 app.use('/', viewRouter);
