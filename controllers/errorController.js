@@ -70,7 +70,6 @@ const sendErrorProd = (err, req, res) => {
   // B) RENDERED WEBSITE
   // A) Operational Error, trusted error(from the custom AppError): send message to client
   if (err.isOperational) {
-    console.log(err);
     // render 'error' pug template
     return res.status(err.statusCode).render('error', {
       title: 'Something went wrong!',
