@@ -44,7 +44,9 @@ app.use(
   })
 );
 
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+// Implement CORS
+app.use(cors());
+app.options('*', cors()); // Access-Control-Allow-Origin * for all HTTP methods (GET, POST, etc.)
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {
